@@ -1,0 +1,32 @@
+---
+import { loadQuery } from "../../sanity/lib/load-query";
+import { type SanityDocument } from "sanity";
+
+export const getStaticPaths = async () => {
+	const { data: genres } = await loadQuery<SanityDocument[]>({
+		query: `*[_type == "genre"]`
+	});
+
+	return genres.map((genre) => {
+		if (!genre) {
+			return { params: { slug: "404" } };
+		}
+
+		return {
+			params: {
+				slug: genre.slug.current
+			}
+		};
+	});
+};
+
+const { slug } = Astro.params;
+
+const { data: genre } = await loadQuery({
+
+	query: `*[_type == "genre" && slug.current == $slug][0]`,
+	params: { slug }
+});
+---
+
+<h1>The Genre {genre?.title ?? "404"}</h1>

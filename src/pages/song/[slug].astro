@@ -1,0 +1,35 @@
+---
+import { loadQuery } from "../../sanity/lib/load-query";
+import { type SanityDocument } from "sanity";
+import Layout from "../../layouts/Layout.astro";
+
+export const getStaticPaths = async () => {
+	const { data: songs } = await loadQuery<SanityDocument[]>({
+		query: `*[_type == "song"]`
+	});
+
+	return songs.map((song) => {
+		if (!song) {
+			return { params: { slug: "404" } };
+		}
+
+		return {
+			params: {
+				slug: song.slug.current
+			}
+		};
+	});
+};
+
+const { slug } = Astro.params;
+
+console.log(`${slug} = dragonsong ? ${slug == "dragonsong"}`);
+const { data: song } = await loadQuery({
+
+	query: `*[_type == "song" && slug.current == $slug][0]`,
+	params: { slug }
+});
+---
+<Layout>
+	<h1>The Song {song?.title ?? "404"}</h1>
+</Layout>
